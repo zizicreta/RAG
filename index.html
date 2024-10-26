@@ -3,71 +3,241 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CSV 데이터 보기</title>
+    <title>단종 부품 예측 시스템</title>
     <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.0.1/dist/chart.umd.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: row;
+        }
+        #sidebar {
+            width: 200px;
+            padding: 15px;
+            background: #333;
+            color: #fff;
+            height: 100vh;
+        }
+        #content {
+            flex: 1;
+            padding: 20px;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
 </head>
 <body>
 
-<h2>CSV 파일 전체 데이터 보기</h2>
-<p id="dataCount">로딩 중...</p>
-<p id="errorMessage" style="color: red; display: none;">파일을 로드할 수 없습니다. 파일이 있는지 확인하고 다시 시도하세요.</p>
-<table id="csvTable" class="display">
-    <thead>
-        <tr id="tableHeader"></tr>
-    </thead>
-    <tbody id="tableBody"></tbody>
-</table>
+<div id="sidebar">
+    <h2>단종 부품 예측 시스템</h2>
+    <ul>
+        <li><a href="#" onclick="showPage('partList')">단종 부품 목록</a></li>
+        <li><a href="#" onclick="showPage('riskPrediction')">단종 위험 예측</a></li>
+        <li><a href="#" onclick="showPage('alternativeParts')">대체 부품 추천</a></li>
+        <li><a href="#" onclick="showPage('inventoryPlan')">부품 재고 및 수급 계획</a></li>
+        <li><a href="#" onclick="showPage('productionOrigin')">부품별 생산지</a></li>
+        <li><a href="#" onclick="showPage('productionTrend')">생산량 추이</a></li>
+        <li><a href="#" onclick="showPage('allData')">전체 데이터 보기</a></li> <!-- 새로운 메뉴 추가 -->
+    </ul>
+</div>
+
+<div id="content">
+    <!-- 단종 부품 목록 -->
+    <div id="partList" class="hidden">
+        <h2>단종 부품 목록</h2>
+        <table id="partTable" class="display">
+            <thead>
+                <tr><th>부품명</th><th>부품 코드</th><th>수량</th></tr>
+            </thead>
+            <tbody id="partTableBody"></tbody>
+        </table>
+    </div>
+
+    <!-- 단종 위험 예측 -->
+    <div id="riskPrediction" class="hidden">
+        <h2>단종 위험 예측</h2>
+        <canvas id="riskChart"></canvas>
+    </div>
+
+    <!-- 대체 부품 추천 -->
+    <div id="alternativeParts" class="hidden">
+        <h2>대체 부품 추천 및 공급처 정보</h2>
+        <table id="alternativeTable" class="display">
+            <thead>
+                <tr><th>대체 부품</th><th>호환성</th><th>예상 비용</th><th>공급처</th></tr>
+            </thead>
+            <tbody id="alternativeTableBody"></tbody>
+        </table>
+    </div>
+
+    <!-- 부품 재고 및 수급 계획 -->
+    <div id="inventoryPlan" class="hidden">
+        <h2>부품 재고 관리 및 수급 계획</h2>
+        <canvas id="inventoryChart"></canvas>
+    </div>
+
+    <!-- 부품별 생산지 -->
+    <div id="productionOrigin" class="hidden">
+        <h2>부품별 생산지</h2>
+        <table id="originTable" class="display">
+            <thead>
+                <tr><th>부품명</th><th>생산지</th></tr>
+            </thead>
+            <tbody id="originTableBody"></tbody>
+        </table>
+
+        <h3>나라별 생산업체 수</h3>
+        <canvas id="originChart"></canvas>
+    </div>
+
+    <!-- 생산량 추이 -->
+    <div id="productionTrend" class="hidden">
+        <h2>5년간 생산량 추이</h2>
+        <table id="trendTable" class="display">
+            <thead>
+                <tr><th>연도</th><th>부품명</th><th>2019</th><th>2020</th><th>2021</th><th>2022</th><th>2023</th></tr>
+            </thead>
+            <tbody id="trendTableBody"></tbody>
+        </table>
+    </div>
+
+    <!-- 전체 데이터 보기 -->
+    <div id="allData" class="hidden">
+        <h2>전체 데이터 보기</h2>
+        <table id="allDataTable" class="display">
+            <thead>
+                <tr><th>부품명</th><th>부품 코드</th><th>수량</th><th>위험 수준</th><th>생산지</th><th>대체 부품</th><th>호환성</th><th>예상 비용</th><th>공급처</th><th>2019</th><th>2020</th><th>2021</th><th>2022</th><th>2023</th></tr>
+            </thead>
+            <tbody id="allDataTableBody"></tbody>
+        </table>
+    </div>
+</div>
 
 <script>
-    // fetch()와 PapaParse를 이용한 CSV 파일 로드
-    fetch("parts_data.csv")
-        .then(response => {
-            if (!response.ok) {
-                throw new Error("파일을 로드할 수 없습니다.");
-            }
-            return response.text();
-        })
-        .then(csvText => {
-            Papa.parse(csvText, {
-                header: true,
-                complete: function(results) {
-                    const data = results.data;
-                    if (data.length === 0) {
-                        document.getElementById("errorMessage").textContent = "파일에 데이터가 없습니다.";
-                        document.getElementById("errorMessage").style.display = "block";
-                        document.getElementById("dataCount").textContent = "데이터 없음";
-                        return;
-                    }
+    // CSV 파일 로드
+    Papa.parse("parts_data.csv", {
+        download: true,
+        header: true,
+        complete: function(results) {
+            const data = results.data;
+            const originCount = { '한국': 0, '미국': 0, '유럽': 0, '일본': 0 };
+            const partNames = [];
+            const quantities = [];
+            const riskLevels = [];
+            const productionTrends = [2019, 2020, 2021, 2022, 2023].map(() => []);
 
-                    const headers = Object.keys(data[0]);
-                    document.getElementById("dataCount").textContent = `데이터 개수: ${data.length}개`;
+            data.forEach(row => {
+                partNames.push(row["부품명"]);
+                quantities.push(row["수량"]);
+                riskLevels.push(row["위험 수준"]);
+                originCount[row["생산지"]] += 1;
 
-                    // 테이블 헤더 생성
-                    headers.forEach(header => {
-                        document.getElementById("tableHeader").insertAdjacentHTML("beforeend", `<th>${header}</th>`);
-                    });
+                // 각 페이지 테이블에 데이터 추가
+                document.getElementById("partTableBody").insertAdjacentHTML(
+                    'beforeend',
+                    `<tr><td>${row["부품명"]}</td><td>${row["부품 코드"]}</td><td>${row["수량"]}</td></tr>`
+                );
 
-                    // 테이블 바디에 데이터 추가
-                    data.forEach(row => {
-                        const rowHTML = headers.map(header => `<td>${row[header]}</td>`).join("");
-                        document.getElementById("tableBody").insertAdjacentHTML("beforeend", `<tr>${rowHTML}</tr>`);
-                    });
+                document.getElementById("originTableBody").insertAdjacentHTML(
+                    'beforeend',
+                    `<tr><td>${row["부품명"]}</td><td>${row["생산지"]}</td></tr>`
+                );
 
-                    // DataTables 적용
-                    $(document).ready(function() {
-                        $('#csvTable').DataTable();
-                    });
-                }
+                document.getElementById("alternativeTableBody").insertAdjacentHTML(
+                    'beforeend',
+                    `<tr><td>${row["대체 부품"]}</td><td>${row["호환성"]}</td><td>${row["예상 비용"]}</td><td>${row["공급처"]}</td></tr>`
+                );
+
+                document.getElementById("trendTableBody").insertAdjacentHTML(
+                    'beforeend',
+                    `<tr><td>${row["부품명"]}</td><td>${row["생산지"]}</td><td>${row["2019 생산량"]}</td><td>${row["2020 생산량"]}</td><td>${row["2021 생산량"]}</td><td>${row["2022 생산량"]}</td><td>${row["2023 생산량"]}</td></tr>`
+                );
+
+                // 전체 데이터 테이블에 데이터 추가
+                document.getElementById("allDataTableBody").insertAdjacentHTML(
+                    'beforeend',
+                    `<tr><td>${row["부품명"]}</td><td>${row["부품 코드"]}</td><td>${row["수량"]}</td><td>${row["위험 수준"]}</td><td>${row["생산지"]}</td><td>${row["대체 부품"]}</td><td>${row["호환성"]}</td><td>${row["예상 비용"]}</td><td>${row["공급처"]}</td><td>${row["2019 생산량"]}</td><td>${row["2020 생산량"]}</td><td>${row["2021 생산량"]}</td><td>${row["2022 생산량"]}</td><td>${row["2023 생산량"]}</td></tr>`
+                );
+
+                productionTrends[0].push(row["2019 생산량"]);
+                productionTrends[1].push(row["2020 생산량"]);
+                productionTrends[2].push(row["2021 생산량"]);
+                productionTrends[3].push(row["2022 생산량"]);
+                productionTrends[4].push(row["2023 생산량"]);
             });
-        })
-        .catch(error => {
-            document.getElementById("errorMessage").textContent = error.message;
-            document.getElementById("errorMessage").style.display = "block";
-            document.getElementById("dataCount").textContent = "데이터 로딩 실패";
+
+            createCharts(partNames, quantities, riskLevels, originCount, productionTrends);
+        }
+    });
+
+    function createCharts(partNames, quantities, riskLevels, originCount, productionTrends) {
+        // 단종 위험 예측 파이 차트
+        new Chart(document.getElementById("riskChart"), {
+            type: 'pie',
+            data: {
+                labels: partNames,
+                datasets: [{
+                    label: '단종 위험도',
+                    data: riskLevels,
+                    backgroundColor: riskLevels.map(() => '#' + Math.floor(Math.random()*16777215).toString(16))
+                }]
+            }
         });
+
+        // 재고 현황 막대 그래프
+        new Chart(document.getElementById("inventoryChart"), {
+            type: 'bar',
+            data: {
+                labels: partNames,
+                datasets: [{
+                    label: '재고 수량',
+                    data: quantities,
+                    backgroundColor: '#36A2EB'
+                }]
+            },
+            options: {
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+
+        // 나라별 생산업체 수 차트
+        new Chart(document.getElementById("originChart"), {
+            type: 'bar',
+            data: {
+                labels: Object.keys(originCount),
+                datasets: [{
+                    label: '나라별 생산업체 수',
+                    data: Object.values(originCount),
+                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0']
+                }]
+            },
+            options: {
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+    }
+
+    function showPage(pageId) {
+        document.querySelectorAll("#content > div").forEach(div => div.classList.add("hidden"));
+        document.getElementById(pageId).classList.remove("hidden");
+    }
+
+    $(document).ready(function() {
+        $('#partTable').DataTable();
+        $('#alternativeTable').DataTable();
+        $('#originTable').DataTable();
+        $('#trendTable').DataTable();
+        $('#allDataTable').DataTable(); // 전체 데이터 테이블에 DataTables 적용
+    });
 </script>
 
 </body>

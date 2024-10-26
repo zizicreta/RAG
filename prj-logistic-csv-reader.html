@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSV 데이터 보기</title>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+</head>
+<body>
+
+<h2>CSV 파일 전체 데이터 보기</h2>
+<p id="dataCount">로딩 중...</p>
+<p id="errorMessage" style="color: red; display: none;">파일을 로드할 수 없습니다. 파일이 있는지 확인하고 다시 시도하세요.</p>
+<table id="csvTable" class="display">
+    <thead>
+        <tr id="tableHeader"></tr>
+    </thead>
+    <tbody id="tableBody"></tbody>
+</table>
+
+<script>
+    // fetch()와 PapaParse를 이용한 CSV 파일 로드
+    fetch("parts_data.csv")
+        .then(response => {
+            if (!response.ok) {
+                throw new Error("파일을 로드할 수 없습니다.");
+            }
+            return response.text();
+        })
+        .then(csvText => {
+            Papa.parse(csvText, {
+                header: true,
+                complete: function(results) {
+                    const data = results.data;
+                    if (data.length === 0) {
+                        document.getElementById("errorMessage").textContent = "파일에 데이터가 없습니다.";
+                        document.getElementById("errorMessage").style.display = "block";
+                        document.getElementById("dataCount").textContent = "데이터 없음";
+                        return;
+                    }
+
+                    const headers = Object.keys(data[0]);
+                    document.getElementById("dataCount").textContent = `데이터 개수: ${data.length}개`;
+
+                    // 테이블 헤더 생성
+                    headers.forEach(header => {
+                        document.getElementById("tableHeader").insertAdjacentHTML("beforeend", `<th>${header}</th>`);
+                    });
+
+                    // 테이블 바디에 데이터 추가
+                    data.forEach(row => {
+                        const rowHTML = headers.map(header => `<td>${row[header]}</td>`).join("");
+                        document.getElementById("tableBody").insertAdjacentHTML("beforeend", `<tr>${rowHTML}</tr>`);
+                    });
+
+                    // DataTables 적용
+                    $(document).ready(function() {
+                        $('#csvTable').DataTable();
+                    });
+                }
+            });
+        })
+        .catch(error => {
+            document.getElementById("errorMessage").textContent = error.message;
+            document.getElementById("errorMessage").style.display = "block";
+            document.getElementById("dataCount").textContent = "데이터 로딩 실패";
+        });
+</script>
+
+</body>
+</html>
