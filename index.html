@@ -3,160 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>반응형 대시보드</title>
-    <link rel="stylesheet" href="style.css">
+    <title>CSV 데이터 보기</title>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
 </head>
 <body>
 
-    <!-- 사이드바 -->
-    <aside class="sidebar">
-        <h2>대시보드</h2>
-        <ul>
-            <li><a href="#" onclick="showPage('home')">홈</a></li>
-            <li><a href="#" onclick="showPage('user-management')">User Info</a></li>
-            <li><a href="#" onclick="showPage('statistics')">Statics</a></li>
-            <li><a href="#" onclick="showPage('settings')">Setting</a></li>
-        </ul>
-    </aside>
+<h2>CSV 파일 전체 데이터 보기</h2>
+<p id="dataCount">로딩 중...</p>
+<p id="errorMessage" style="color: red; display: none;">파일을 로드할 수 없습니다. 파일이 있는지 확인하고 다시 시도하세요.</p>
+<table id="csvTable" class="display">
+    <thead>
+        <tr id="tableHeader"></tr>
+    </thead>
+    <tbody id="tableBody"></tbody>
+</table>
 
-    <!-- 메인 콘텐츠 -->
-    <div class="main-content">
-        <header>대시보드 메인 - Lim Taehoon - </header>
+<script>
+    // fetch()와 PapaParse를 이용한 CSV 파일 로드
+    fetch("parts_data.csv")
+        .then(response => {
+            if (!response.ok) {
+                throw new Error("파일을 로드할 수 없습니다.");
+            }
+            return response.text();
+        })
+        .then(csvText => {
+            Papa.parse(csvText, {
+                header: true,
+                complete: function(results) {
+                    const data = results.data;
+                    if (data.length === 0) {
+                        document.getElementById("errorMessage").textContent = "파일에 데이터가 없습니다.";
+                        document.getElementById("errorMessage").style.display = "block";
+                        document.getElementById("dataCount").textContent = "데이터 없음";
+                        return;
+                    }
 
-        <!-- 페이지 컨텐츠 -->
-        <div id="home" class="page-content active">
-            <h2>홈 페이지</h2>
-            <p>이곳은 대시보드의 홈 페이지입니다.</p>
-            <div class="chart-container">
-                <div class="chart-box">
-                    <canvas id="chart1"></canvas>
-                </div>
-                <div class="chart-box">
-                    <canvas id="chart2"></canvas>
-                </div>
-                <div class="chart-box">
-                    <canvas id="chart3"></canvas>
-                </div>
-                <div class="chart-box">
-                    <canvas id="chart4"></canvas>
-                </div>
-            </div>
-        </div>
-        
-        <div id="user-management" class="page-content">
-            <h2>사용자 관리 - 차트 데이터 입력</h2>
-            <p>각 차트의 데이터를 입력하세요.</p>
-            
-            <!-- 테이블 입력 폼 -->
-            <table>
-                <thead>
-                    <tr>
-                        <th>항목</th>
-                        <th>차트 1</th>
-                        <th>차트 2</th>
-                        <th>차트 3</th>
-                        <th>차트 4</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>데이터 1</td>
-                        <td><input type="number" id="data1-chart1" value="30"></td>
-                        <td><input type="number" id="data1-chart2" value="40"></td>
-                        <td><input type="number" id="data1-chart3" value="60"></td>
-                        <td><input type="number" id="data1-chart4" value="10"></td>
-                    </tr>
-                    <tr>
-                        <td>데이터 2</td>
-                        <td><input type="number" id="data2-chart1" value="50"></td>
-                        <td><input type="number" id="data2-chart2" value="20"></td>
-                        <td><input type="number" id="data2-chart3" value="40"></td>
-                        <td><input type="number" id="data2-chart4" value="25"></td>
-                    </tr>
-                    <tr>
-                        <td>데이터 3</td>
-                        <td><input type="number" id="data3-chart1" value="20"></td>
-                        <td><input type="number" id="data3-chart2" value="30"></td>
-                        <td><input type="number" id="data3-chart3" value="0"></td>
-                        <td><input type="number" id="data3-chart4" value="20"></td>
-                    </tr>
-                </tbody>
-            </table>
-            <button onclick="updateCharts()">차트 업데이트</button>
-        </div>
+                    const headers = Object.keys(data[0]);
+                    document.getElementById("dataCount").textContent = `데이터 개수: ${data.length}개`;
 
-        <div id="statistics" class="page-content">
-            <h2>통계</h2>
-            <p>대시보드 통계 페이지입니다.</p>
-        </div>
-<!---
-        <div id="settings" class="page-content">
-            <h2>설정</h2>
-            <p>이곳에서 대시보드 설정을 변경할 수 있습니다.</p>
-        </div>
--->
+                    // 테이블 헤더 생성
+                    headers.forEach(header => {
+                        document.getElementById("tableHeader").insertAdjacentHTML("beforeend", `<th>${header}</th>`);
+                    });
 
-<!--- Menu Updated --->
-<div id="settings" class="page-content">
-    <h2>설정</h2>
-    <p>이곳에서 대시보드 설정을 변경할 수 있습니다.</p>
+                    // 테이블 바디에 데이터 추가
+                    data.forEach(row => {
+                        const rowHTML = headers.map(header => `<td>${row[header]}</td>`).join("");
+                        document.getElementById("tableBody").insertAdjacentHTML("beforeend", `<tr>${rowHTML}</tr>`);
+                    });
 
-    <div class="menu-settings">
-        <h3>메뉴 편집</h3>
-        
-        <label for="menu-select">편집할 메뉴 선택:</label>
-        <select id="menu-select">
-            <option value="main">Main Menu</option>
-            <option value="footer">Footer Menu</option>
-            <option value="top">Top Bar Menu</option>
-            <option value="account">My Account Menu</option>
-        </select>
-        <button type="button">선택</button>
-        
-        <hr>
+                    // DataTables 적용
+                    $(document).ready(function() {
+                        $('#csvTable').DataTable();
+                    });
+                }
+            });
+        })
+        .catch(error => {
+            document.getElementById("errorMessage").textContent = error.message;
+            document.getElementById("errorMessage").style.display = "block";
+            document.getElementById("dataCount").textContent = "데이터 로딩 실패";
+        });
+</script>
 
-        <h3>메뉴 추가</h3>
-        <div class="menu-add">
-            <label>페이지</label>
-            <ul>
-                <li><input type="checkbox"> Home</li>
-                <li><input type="checkbox"> About</li>
-                <li><input type="checkbox"> Contact</li>
-                <li><input type="checkbox"> Blog</li>
-                <li><input type="checkbox"> Dashboard</li>
-            </ul>
-            <button type="button">메뉴에 추가</button>
-        </div>
-
-        <h3>메뉴 설정</h3>
-        <label><input type="checkbox"> 페이지 자동 추가</label>
-        <div>
-            <label>보이는 위치:</label>
-            <ul>
-                <li><input type="radio" name="position" value="main"> Main Menu</li>
-                <li><input type="radio" name="position" value="footer"> Footer Menu</li>
-                <li><input type="radio" name="position" value="top"> Top Bar Menu</li>
-                <li><input type="radio" name="position" value="account"> My Account Menu</li>
-            </ul>
-        </div>
-        <button type="button">메뉴 저장</button>
-    </div>
-</div>
-
-<!--- updated --->
-
-
-
-
-    </div>
-
-    <!-- 푸터 -->
-    <footer>
-        <p>© 2024 반응형 대시보드. 모든 권리 보유.</p>
-    </footer>
-
-    <!-- Chart.js 라이브러리 추가 및 스크립트 연결 -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="script.js"></script>
 </body>
 </html>

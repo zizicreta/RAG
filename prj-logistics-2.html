@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>단종 부품 예측 시스템</title>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: row;
+        }
+        #sidebar {
+            width: 200px;
+            padding: 15px;
+            background: #333;
+            color: #fff;
+            height: 100vh;
+        }
+        #content {
+            flex: 1;
+            padding: 20px;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div id="sidebar">
+    <h2>단종 부품 예측 시스템</h2>
+    <ul>
+        <li><a href="#" onclick="showPage('partList')">단종 부품 목록</a></li>
+        <li><a href="#" onclick="showPage('productionOrigin')">부품별 생산지</a></li>
+        <li><a href="#" onclick="showPage('productionTrend')">생산량 추이</a></li>
+    </ul>
+</div>
+
+<div id="content">
+    <!-- 단종 부품 목록 -->
+    <div id="partList" class="hidden">
+        <h2>단종 부품 목록</h2>
+        <table id="partTable" class="display">
+            <thead>
+                <tr><th>부품명</th><th>부품 코드</th><th>수량</th></tr>
+            </thead>
+            <tbody id="partTableBody">
+                <!-- 데이터가 동적으로 생성됨 -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 부품별 생산지 -->
+    <div id="productionOrigin" class="hidden">
+        <h2>부품별 생산지</h2>
+        <table id="originTable" class="display">
+            <thead>
+                <tr><th>부품명</th><th>생산지</th></tr>
+            </thead>
+            <tbody id="originTableBody">
+                <!-- 데이터가 동적으로 생성됨 -->
+            </tbody>
+        </table>
+
+        <h3>나라별 생산업체 수</h3>
+        <canvas id="originChart"></canvas>
+    </div>
+
+    <!-- 생산량 추이 -->
+    <div id="productionTrend" class="hidden">
+        <h2>5년간 생산량 추이</h2>
+        <table id="trendTable" class="display">
+            <thead>
+                <tr><th>연도</th><th>부품명</th><th>2019</th><th>2020</th><th>2021</th><th>2022</th><th>2023</th></tr>
+            </thead>
+            <tbody id="trendTableBody">
+                <!-- 데이터가 동적으로 생성됨 -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    const partData = [];
+    const originData = { '한국': 0, '미국': 0, '유럽': 0, '일본': 0 };
+    const countries = ['한국', '미국', '유럽', '일본'];
+    const years = [2019, 2020, 2021, 2022, 2023];
+    const numParts = 100;
+
+    // 부품 목록, 생산지, 생산량 데이터 생성
+    for (let i = 1; i <= numParts; i++) {
+        const partName = `부품 ${i}`;
+        const partCode = `P${i.toString().padStart(3, '0')}`;
+        const quantity = Math.floor(Math.random() * 500) + 1; // 1 ~ 500 임의 수량
+        const origin = countries[Math.floor(Math.random() * countries.length)];
+        
+        // 부품 목록 데이터
+        partData.push({ partName, partCode, quantity, origin });
+
+        // 생산지별 부품 수 집계
+        originData[origin]++;
+
+        // 생산량 데이터 생성
+        const productionTrend = years.map(year => Math.floor(Math.random() * 1000) + 500); // 500 ~ 1500 사이 임의의 생산량
+
+        // HTML 테이블에 데이터 추가
+        document.addEventListener("DOMContentLoaded", () => {
+            // 부품 목록 테이블
+            document.getElementById("partTableBody").insertAdjacentHTML(
+                'beforeend',
+                `<tr><td>${partName}</td><td>${partCode}</td><td>${quantity}</td></tr>`
+            );
+
+            // 부품별 생산지 테이블
+            document.getElementById("originTableBody").insertAdjacentHTML(
+                'beforeend',
+                `<tr><td>${partName}</td><td>${origin}</td></tr>`
+            );
+
+            // 생산량 추이 테이블
+            document.getElementById("trendTableBody").insertAdjacentHTML(
+                'beforeend',
+                `<tr><td>${partName}</td><td>${origin}</td><td>${productionTrend.join('</td><td>')}</td></tr>`
+            );
+        });
+    }
+
+    // 페이지 전환 함수
+    function showPage(pageId) {
+        document.querySelectorAll("#content > div").forEach(div => div.classList.add("hidden"));
+        document.getElementById(pageId).classList.remove("hidden");
+    }
+
+    // DataTables 적용
+    $(document).ready(function() {
+        $('#partTable').DataTable();
+        $('#originTable').DataTable();
+        $('#trendTable').DataTable();
+    });
+
+    // 나라별 생산업체 수 차트
+    document.addEventListener("DOMContentLoaded", function() {
+        new Chart(document.getElementById("originChart"), {
+            type: 'bar',
+            data: {
+                labels: Object.keys(originData),
+                datasets: [{
+                    label: '나라별 생산업체 수',
+                    data: Object.values(originData),
+                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0']
+                }]
+            },
+            options: {
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+    });
+</script>
+
+</body>
+</html>
