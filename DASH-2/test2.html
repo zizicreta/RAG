@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Three Bar Charts with Chart.js</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h2>Three Bar Charts Comparison</h2>
+    <canvas id="myChart" width="600" height="400"></canvas>
+
+    <script>
+        const ctx = document.getElementById('myChart').getContext('2d');
+        const myChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['A', 'B', 'C', 'D'],  // X축 레이블
+                datasets: [
+                    {
+                        label: 'Dataset 1',
+                        data: [25, 30, 35, 40],  // 첫 번째 데이터 세트
+                        backgroundColor: 'rgba(135, 206, 235, 0.6)', // skyblue
+                        borderColor: 'rgba(135, 206, 235, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Dataset 2',
+                        data: [20, 25, 30, 35],  // 두 번째 데이터 세트
+                        backgroundColor: 'rgba(250, 128, 114, 0.6)', // salmon
+                        borderColor: 'rgba(250, 128, 114, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Dataset 3',
+                        data: [15, 20, 25, 30],  // 세 번째 데이터 세트
+                        backgroundColor: 'rgba(144, 238, 144, 0.6)', // lightgreen
+                        borderColor: 'rgba(144, 238, 144, 1)',
+                        borderWidth: 1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: {
+                        beginAtZero: true
+                    },
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

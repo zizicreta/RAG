@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ngrok Setup Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #1b1e2b;
+            color: white;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* Sidebar styles */
+        .sidebar {
+            width: 250px;
+            background-color: #2e3246;
+            padding: 20px;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar h2 {
+            color: #9baacf;
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .sidebar ul li {
+            margin-bottom: 10px;
+        }
+
+        .sidebar ul li a {
+            text-decoration: none;
+            color: #c0c7e3;
+            font-size: 14px;
+            display: block;
+            padding: 10px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .sidebar ul li a:hover,
+        .sidebar ul li a.active {
+            background-color: #4a4f6b;
+        }
+
+        /* Main content styles */
+        .main-content {
+            flex-grow: 1;
+            padding: 40px;
+            background-color: #1b1e2b;
+        }
+
+        .main-content h1 {
+            font-size: 32px;
+            margin-bottom: 20px;
+        }
+
+        .main-content p {
+            font-size: 16px;
+            margin-bottom: 40px;
+        }
+
+        .main-content .grid {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .grid-item {
+            flex: 1 1 calc(33.333% - 20px);
+            background-color: #2e3246;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .grid-item h3 {
+            font-size: 16px;
+            margin-bottom: 10px;
+            color: #9baacf;
+        }
+
+        .grid-item img {
+            width: 40px;
+            margin-bottom: 10px;
+        }
+
+        .grid-item p {
+            font-size: 14px;
+            color: #c0c7e3;
+        }
+
+        .grid-item a {
+            color: #4a90e2;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        @media (max-width: 768px) {
+            .grid-item {
+                flex: 1 1 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <h2>Getting Started</h2>
+            <ul>
+                <li><a href="#" class="active">Setup & Installation</a></li>
+                <li><a href="#">Your Authtoken</a></li>
+            </ul>
+            <h2>Universal Gateway</h2>
+            <ul>
+                <li><a href="#">Endpoints</a></li>
+                <li><a href="#">Domains</a></li>
+                <li><a href="#">TCP Addresses</a></li>
+                <li><a href="#">TLS Certificates</a></li>
+                <li><a href="#">Edges</a></li>
+            </ul>
+            <h2>Secure Tunnels</h2>
+            <ul>
+                <li><a href="#">Agents</a></li>
+                <li><a href="#">Ingress</a></li>
+            </ul>
+            <h2>Traffic Observability</h2>
+            <ul>
+                <li><a href="#">Traffic Inspector</a></li>
+                <li><a href="#">Events Stream</a></li>
+            </ul>
+            <h2>Traffic Policy</h2>
+            <ul>
+                <li><a href="#">IP Policies</a></li>
+                <li><a href="#">TLS Certificate Authorities</a></li>
+                <li><a href="#">App Users</a></li>
+            </ul>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <h1>Welcome</h1>
+            <p>
+                ngrok is your app’s front door—a globally distributed reverse proxy that secures, protects and accelerates your applications and network services, no matter where you run them.
+            </p>
+            <div class="grid">
+                <div class="grid-item">
+                    <img src="https://via.placeholder.com/40" alt="macOS">
+                    <h3>macOS</h3>
+                </div>
+                <div class="grid-item">
+                    <img src="https://via.placeholder.com/40" alt="Windows">
+                    <h3>Windows</h3>
+                </div>
+                <div class="grid-item">
+                    <img src="https://via.placeholder.com/40" alt="Linux">
+                    <h3>Linux</h3>
+                </div>
+                <div class="grid-item">
+                    <img src="https://via.placeholder.com/40" alt="Docker">
+                    <h3>Docker</h3>
+                </div>
+                <div class="grid-item">
+                    <img src="https://via.placeholder.com/40" alt="RaspberryPi">
+                    <h3>RaspberryPi</h3>
+                </div>
+                <div class="grid-item">
+                    <img src="https://via.placeholder.com/40" alt="FreeBSD">
+                    <h3>FreeBSD</h3>
+                </div>
+            </div>
+            <div class="grid">
+                <div class="grid-item">
+                    <img src="https://via.placeholder.com/40" alt="Go">
+                    <h3>Go</h3>
+                </div>
+                <div class="grid-item">
+                    <img src="https://via.placeholder.com/40" alt="NodeJS">
+                    <h3>NodeJS</h3>
+                </div>
+                <div class="grid-item">
+                    <img src="https://via.placeholder.com/40" alt="Rust">
+                    <h3>Rust</h3>
+                </div>
+                <div class="grid-item">
+                    <img src="https://via.placeholder.com/40" alt="Python">
+                    <h3>Python</h3>
+                </div>
+                <div class="grid-item">
+                    <img src="https://via.placeholder.com/40" alt="Java">
+                    <h3>Java</h3>
+                </div>
+                <div class="grid-item">
+                    <img src="https://via.placeholder.com/40" alt="Ruby">
+                    <h3>Ruby</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

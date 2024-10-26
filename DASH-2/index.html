@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ngrok Setup Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        p {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+        label {
+            font-weight: bold;
+            font-size: 14px;
+            color: #333;
+            display: block;
+            margin-bottom: 5px;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #2d79f7;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #1a5bbf;
+        }
+        .output {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Ngrok Setup</h1>
+        <p>Follow the steps below to configure Ngrok on your Windows system.</p>
+        
+        <label for="token">1. Enter your Ngrok Auth Token:</label>
+        <input type="text" id="token" placeholder="Enter your auth token">
+
+        <label for="port">2. Enter the Local Port to Forward:</label>
+        <input type="text" id="port" placeholder="e.g., 80">
+
+        <button onclick="startNgrok()">Start Ngrok</button>
+        
+        <div id="output" class="output"></div>
+    </div>
+
+    <script>
+        function startNgrok() {
+            const token = document.getElementById('token').value;
+            const port = document.getElementById('port').value;
+            document.getElementById('output').innerText = "Setting up Ngrok...";
+
+            // 예제 POST 요청 (서버 사이드 스크립트 필요)
+            fetch('/start-ngrok', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ token, port })
+            })
+            .then(response => response.ok ? "Ngrok started!" : "Failed to start Ngrok.")
+            .then(message => {
+                document.getElementById('output').innerText = message;
+            })
+            .catch(error => {
+                document.getElementById('output').innerText = "An error occurred.";
+                console.error(error);
+            });
+        }
+    </script>
+</body>
+</html>
